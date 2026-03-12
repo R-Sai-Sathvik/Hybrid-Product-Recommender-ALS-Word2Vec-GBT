@@ -1,0 +1,24 @@
+# Scala build 
+target/ 
+project/target/ 
+project/project/ 
+*.jar 
+*.class 
+*.parquet 
+*.snappy.parquet 
+.idea/ 
+.bsp/ 
+.metals/ 
+.vscode/ 
+.scala-build/ 
+scala/src/main/scala/.metals/ 
+scala/src/main/scala/.scala-build/ 
+scala/src/main/scala/.vscode/ 
+bda_ui/data/ 
+*.log 
+*.mv.db 
+*.gz 
+*.txt 
+*.py 
+workspace/ 
+*.gz 

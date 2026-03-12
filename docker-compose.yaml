@@ -1,0 +1,86 @@
+version: "3.8"
+
+services:
+
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: unless-stopped
+    environment:
+      - CLUSTER_NAME=bda
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - HDFS_CONF_dfs_replication=1
+      - HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check=false
+    ports:
+      - "9870:9870"
+      - "8020:8020"
+    volumes:
+      - namenode-data:/hadoop/dfs/name
+    networks:
+      - bda-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9870"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    restart: unless-stopped
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - SERVICE_PRECONDITION=namenode:9870
+      - HDFS_CONF_dfs_replication=1
+    depends_on:
+      namenode:
+        condition: service_healthy
+    volumes:
+      - datanode-data:/hadoop/dfs/data
+    networks:
+      - bda-net
+
+  spark-master:
+    image: apache/spark:3.5.1
+    container_name: spark-master
+    restart: unless-stopped
+    user: root
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+      - "4040:4040"
+    volumes:
+      - spark-checkpoints:/opt/spark/checkpoints
+      - ./scala:/opt/spark/work-dir/scala
+    networks:
+      - bda-net
+
+  spark-worker:
+    image: apache/spark:3.5.1
+    container_name: spark-worker
+    restart: unless-stopped
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    user: root
+    environment:
+      - SPARK_WORKER_MEMORY=6g
+      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_DIR=/opt/spark/work
+      - SPARK_LOCAL_DIRS=/opt/spark/tmp
+    depends_on:
+      - spark-master
+    volumes:
+      - spark-worker-data:/opt/spark/work
+      - ./scala:/opt/spark/work-dir/scala
+    networks:
+      - bda-net
+
+volumes:
+  namenode-data:
+  datanode-data:
+  spark-checkpoints:
+  spark-worker-data:    # Spark worker state
+
+networks:
+  bda-net:
+    driver: bridge
