@@ -20,9 +20,8 @@ embeddings, and GBT re-ranking to serve personalized top-10 product recommendati
 | 6. Web UI | app.py + index.html | Python Flask | Dashboard + Search |
 
 ## Model Results
-- AUC-ROC : 0.8245 (target >0.75) ✅
-- AUC-PR  : 0.4251 (target >0.40) ✅
-- Accuracy: 90.37% ✅
+- AUC-ROC : 0.8245 
+- Accuracy: 90.37% 
 - Coverage: 100% of users
 
 ## Tech Stack
